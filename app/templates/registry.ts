@@ -2,67 +2,50 @@
  * Template Registry
  * 
  * Maps templateId → dynamic import path
- * Allows rendering any template component based on ID
- * 
- * Structure:
- * - Each template is a folder: app/templates/[templateName]/
- * - Each template has a page.tsx that exports the component
- * - Dynamic imports allow rendering without loading all templates
+ * This maps all 60 physical database templates to 3 Universal Master Components
  */
 
-// Map of template IDs to their component paths
-// This allows us to dynamically import the right template component
 const TEMPLATE_REGISTRY: Record<
   string,
   () => Promise<{ default: React.ComponentType<any> }>
-> = {
-  // Services > Plumber
-  'classic-pro-plumber': () =>
-    import('./plumber/classic-pro').then((m) => ({ default: m.ClassicProPlumber })),
-  'modern-blue-plumber': () =>
-    import('./plumber/modern-blue').then((m) => ({ default: m.ModernBluePlumber })),
+> = {};
 
-  // Add more templates as they're converted:
-  // Services > Fitness
-  // 'minimal-clean-fitness': () =>
-  //   import('./fitness/minimal-clean').then((m) => ({ default: m.MinimalCleanFitness })),
-  //
-  // 'template-id': () => import('./category/component-name').then(m => ({default: m.ComponentName}))
-};
+// We map the incoming database IDs to our 3 master templates
+// Database standard layout: {type}_{category}_{style} (e.g. svc_plumber_classic)
 
-/**
- * Get a template component by ID
- * Returns the React component or null if not found
- */
 export async function getTemplateComponent(
   templateId: string
 ): Promise<React.ComponentType<any> | null> {
-  const importer = TEMPLATE_REGISTRY[templateId];
-
-  if (!importer) {
-    console.warn(`Template not found: ${templateId}`);
-    return null;
-  }
-
   try {
-    const module = await importer();
-    return module.default;
+    // Determine which master component to load based on the template ID suffix
+    if (templateId.endsWith('_classic')) {
+      const module = await import('./master/ClassicProTemplate');
+      return module.ClassicProTemplate;
+    }
+    else if (templateId.endsWith('_modern')) {
+      const module = await import('./master/ModernBlueTemplate');
+      return module.ModernBlueTemplate;
+    }
+    else if (templateId.endsWith('_minimal')) {
+      const module = await import('./master/MinimalWhiteTemplate');
+      return module.MinimalWhiteTemplate;
+    }
+
+    console.warn(`Template style not recognized for: ${templateId}`);
+    return null;
   } catch (error) {
     console.error(`Error loading template ${templateId}:`, error);
     return null;
   }
 }
 
-/**
- * Check if a template is registered
- */
 export function isTemplateRegistered(templateId: string): boolean {
-  return templateId in TEMPLATE_REGISTRY;
+  return templateId.endsWith('_classic') ||
+    templateId.endsWith('_modern') ||
+    templateId.endsWith('_minimal');
 }
 
-/**
- * Get all registered template IDs
- */
 export function getRegisteredTemplates(): string[] {
-  return Object.keys(TEMPLATE_REGISTRY);
+  // Not strictly needed for rendering, as DB handles listings
+  return [];
 }

@@ -37,6 +37,7 @@ interface EditableTextProps {
   className?: string;
   defaultValue?: string;
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span' | 'div';
+  style?: React.CSSProperties;
 }
 
 export default function EditableText({
@@ -47,6 +48,7 @@ export default function EditableText({
   className = '',
   defaultValue = '',
   as: Component = 'span',
+  style = {},
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(content || defaultValue);
@@ -76,13 +78,13 @@ export default function EditableText({
 
   // Preview mode: just show the text
   if (!isEditMode) {
-    return <Component className={className}>{displayText}</Component>;
+    return <Component className={className} style={style}>{displayText}</Component>;
   }
 
   // Edit mode - show inline element with pencil on hover
   if (isEditing) {
     return (
-      <Component className={`${className} relative`}>
+      <Component className={`${className} relative`} style={style}>
         <input
           ref={inputRef}
           type="text"
@@ -126,6 +128,7 @@ export default function EditableText({
   return (
     <Component
       className={`${className} cursor-text pointer-events-auto transition-colors`}
+      style={style}
       onClick={() => setIsEditing(true)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
