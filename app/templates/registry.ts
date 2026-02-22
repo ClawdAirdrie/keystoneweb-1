@@ -17,9 +17,9 @@ const TEMPLATE_REGISTRY: Record<
   () => Promise<{ default: React.ComponentType<any> }>
 > = {
   // Services > Plumber
-  'classic-pro-plumber': () =>
+  'svc_plumber_classic': () =>
     import('./plumber/classic-pro').then((m) => ({ default: m.ClassicProPlumber })),
-  'modern-blue-plumber': () =>
+  'svc_plumber_modern': () =>
     import('./plumber/modern-blue').then((m) => ({ default: m.ModernBluePlumber })),
 
   // Add more templates as they're converted:

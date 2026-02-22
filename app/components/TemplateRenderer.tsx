@@ -10,6 +10,7 @@ interface TemplateRendererProps {
     accent: string;
   };
   editMode?: boolean;
+  onEditModeChange?: (mode: boolean) => void;
   editableContent?: Record<string, string>;
   onEditableContentChange?: (key: string, value: string) => void;
 }
@@ -24,6 +25,7 @@ export default function TemplateRenderer({
   templateId,
   colors,
   editMode = false,
+  onEditModeChange,
   editableContent = {},
   onEditableContentChange,
 }: TemplateRendererProps) {
@@ -40,7 +42,7 @@ export default function TemplateRenderer({
       try {
         const res = await fetch(`/api/templates/${templateId}`);
         if (!res.ok) throw new Error('Failed to fetch template');
-        
+
         const { html: templateHtml } = await res.json();
         setBaseHtml(templateHtml);
         setLoading(false);
@@ -117,10 +119,10 @@ export default function TemplateRenderer({
     `;
 
     let finalHtml = baseHtml.replace(/<style id="color-overrides">[\s\S]*?<\/style>/g, '');
-    
+
     // Mark editable elements with data attribute
     finalHtml = finalHtml.replace(/{{(\w+)}}/g, '<span data-editable-key="$1" class="inline-block" data-content-key="$1">{{$1}}</span>');
-    
+
     // Replace placeholders with actual content
     if (editableContent && Object.keys(editableContent).length > 0) {
       Object.entries(editableContent).forEach(([key, value]) => {
@@ -128,7 +130,7 @@ export default function TemplateRenderer({
         finalHtml = finalHtml.replace(regex, value || `(${key})`);
       });
     }
-    
+
     if (finalHtml.includes('</head>')) {
       finalHtml = finalHtml.replace('</head>', colorOverrideStyles + '</head>');
     } else if (finalHtml.includes('<body')) {
@@ -148,7 +150,7 @@ export default function TemplateRenderer({
 
     const handleTemplateClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Find the closest editable element
       const editableElement = target.closest('[data-editable-key]') as HTMLElement;
       if (!editableElement) return;
@@ -201,16 +203,28 @@ export default function TemplateRenderer({
 
   return (
     <div className="w-full overflow-auto">
-      {editMode && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-100 border-b-2 border-blue-400 p-3 z-40 shadow">
-          <p className="text-sm text-blue-900 max-w-7xl mx-auto">
-            ✏️ <strong>Edit Mode:</strong> Click any pencil icon to edit text
-          </p>
-        </div>
-      )}
-      
-      <div ref={templateRef} className={editMode ? 'mt-16' : ''}>
-        <div 
+      <div
+        className="fixed top-0 left-0 right-0 border-b p-3 z-1000 shadow flex justify-center items-center gap-4"
+        style={{ backgroundColor: 'var(--brand-primary-light)', borderColor: 'var(--brand-primary-dark)' }}
+      >
+        <p className="text-sm text-white max-w-7xl">
+          {editMode ? (
+            <>✏️ <strong>Edit Mode:</strong> Click any pencil icon to edit text</>
+          ) : (
+            <>👁️ <strong>Preview Mode:</strong> Viewing how your site will look to visitors</>
+          )}
+        </p>
+        <button
+          onClick={() => onEditModeChange?.(!editMode)}
+          className="px-3 py-1 bg-white text-xs font-bold rounded-[4px] hover:bg-slate-100 transition-colors shadow-sm cursor-pointer"
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Switch to {editMode ? 'Preview' : 'Edit'} Mode
+        </button>
+      </div>
+
+      <div ref={templateRef} className="mt-12">
+        <div
           className="relative"
           dangerouslySetInnerHTML={{ __html: html }}
         />

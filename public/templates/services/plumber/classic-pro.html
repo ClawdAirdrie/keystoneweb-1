@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Plumbing Services | 24/7 Emergency Service</title>
+    <title>{{siteTitle}} | 24/7 Emergency Service</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-gray-900 text-white sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold">Elite Plumbing</div>
+            <div class="text-2xl font-bold">{{siteTitle}}</div>
             <div class="hidden md:flex space-x-6">
                 <a href="#services" class="hover:text-blue-400 transition">Services</a>
                 <a href="#about" class="hover:text-blue-400 transition">About</a>
@@ -25,8 +25,8 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid md:grid-cols-2 gap-8 items-center">
                 <div>
-                    <h1 class="text-5xl font-bold mb-4">Expert Plumbing Solutions for Your Home</h1>
-                    <p class="text-xl text-gray-300 mb-6">Licensed plumbers with 20+ years experience. Available 24/7 for emergencies.</p>
+                    <h1 class="text-5xl font-bold mb-4">{{heroTitle}}</h1>
+                    <p class="text-xl text-gray-300 mb-6">{{heroSubtitle}}</p>
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold">Emergency Service</button>
                 </div>
                 <div class="bg-gray-700 h-80 rounded-lg flex items-center justify-center">
@@ -39,7 +39,7 @@
     <!-- Services -->
     <section id="services" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12">Services</h2>
+            <h2 class="text-4xl font-bold text-center mb-12">{{servicesTitle}}</h2>
             <div class="grid md:grid-cols-3 gap-8">
                 <div class="border-l-4 border-blue-600 pl-6 py-4">
                     <h3 class="text-2xl font-bold mb-2">Emergency Repairs</h3>
@@ -92,7 +92,7 @@
     <!-- Testimonials -->
     <section id="testimonials" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12">Customer Reviews</h2>
+            <h2 class="text-4xl font-bold text-center mb-12">{{testimonialsTitle}}</h2>
             <div class="grid md:grid-cols-3 gap-8">
                 <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
                     <div class="flex items-center mb-4">★★★★★</div>
@@ -117,7 +117,7 @@
     <section id="contact" class="bg-blue-600 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <h2 class="text-4xl font-bold mb-4">Plumbing Problem? Call Now</h2>
-            <p class="text-xl mb-8">Available 24/7 for emergencies and regular service.</p>
+            <p class="text-xl mb-8">{{ctaSubtitle}}</p>
             <button class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
                 (555) 234-5678
             </button>
@@ -129,7 +129,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                    <h3 class="text-white font-bold mb-4">Elite Plumbing</h3>
+                    <h3 class="text-white font-bold mb-4">{{siteTitle}}</h3>
                     <p>Licensed plumbing services for over 20 years.</p>
                 </div>
                 <div>
@@ -155,7 +155,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-700 pt-8 text-center text-sm">
-                <p>&copy; 2025 Elite Plumbing. All rights reserved.</p>
+                <p>&copy; 2025 {{siteTitle}}. All rights reserved.</p>
             </div>
         </div>
     </footer>

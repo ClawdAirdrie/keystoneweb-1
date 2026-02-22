@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import FloatingToolbar from '@/app/components/FloatingToolbar';
-import EditModeToggle from '@/app/components/EditModeToggle';
 import TemplateRenderer from '@/app/components/TemplateRenderer';
 import { useAuth } from '@/lib/auth/context';
 
@@ -117,7 +116,7 @@ export default function EditorContent() {
         setLoading(false);
         return;
       }
-      
+
       setSite(data);
       setSiteTitle(data.designData.title || 'My Website');
 
@@ -247,8 +246,6 @@ export default function EditorContent() {
   // Full-screen editor with template preview
   return (
     <div className="w-full h-screen overflow-hidden flex flex-col bg-white">
-      {/* Edit Mode Toggle */}
-      <EditModeToggle isEditMode={editMode} onChange={setEditMode} />
 
       {/* Template Renderer - Full Screen, no top bar */}
       <div className="flex-1 overflow-auto">
@@ -260,6 +257,7 @@ export default function EditorContent() {
             accent: selectedPalette.accent,
           } : undefined}
           editMode={editMode}
+          onEditModeChange={setEditMode}
           editableContent={editableContent}
           onEditableContentChange={handleEditableContentChange}
         />

@@ -40,6 +40,7 @@ export default function FloatingToolbar({
   const drawerRef = useRef<HTMLDivElement>(null);
   const dragStartY = useRef<number>(0);
   const dragStartHeight = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -55,18 +56,24 @@ export default function FloatingToolbar({
   };
 
   const handleDragStart = (e: React.MouseEvent) => {
+    isDragging.current = true;
     dragStartY.current = e.clientY;
     dragStartHeight.current = drawerRef.current?.offsetHeight || 0;
   };
 
   const handleDragMove = (e: React.MouseEvent) => {
-    if (!isOpen || !drawerRef.current) return;
+    if (!isOpen || !drawerRef.current || !isDragging.current) return;
     const deltaY = e.clientY - dragStartY.current;
-    
+
     // If dragged down significantly, close the drawer
     if (deltaY > 50) {
       setIsOpen(false);
+      isDragging.current = false;
     }
+  };
+
+  const handleDragEnd = () => {
+    isDragging.current = false;
   };
 
   return (
@@ -75,7 +82,8 @@ export default function FloatingToolbar({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg flex items-center justify-center transition-all hover:scale-110"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:brightness-110"
+          style={{ backgroundColor: 'var(--brand-primary)' }}
           title="Open editor settings"
         >
           <svg
@@ -104,13 +112,15 @@ export default function FloatingToolbar({
 
       {/* Drawer - Slide animation */}
       {isOpen && (
-        <div 
+        <div
           ref={drawerRef}
           className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto transition-all duration-300 ease-out animate-in slide-in-from-bottom-10"
           onMouseMove={handleDragMove}
+          onMouseUp={handleDragEnd}
+          onMouseLeave={handleDragEnd}
         >
           {/* White Header with Logo - Draggable */}
-          <div 
+          <div
             className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-3xl cursor-grab active:cursor-grabbing group"
             onMouseDown={handleDragStart}
           >
@@ -173,11 +183,11 @@ export default function FloatingToolbar({
                     <button
                       key={palette.name}
                       onClick={() => onSelectPalette?.(palette)}
-                      className={`group relative overflow-hidden rounded-lg border-2 transition-all hover:shadow-md ${
-                        selectedPalette?.name === palette.name
-                          ? 'border-red-600 shadow-lg'
+                      className={`group relative overflow-hidden rounded-lg border-2 transition-all hover:shadow-md ${selectedPalette?.name === palette.name
+                          ? 'shadow-lg'
                           : 'border-slate-200 hover:border-slate-400'
-                      }`}
+                        }`}
+                      style={selectedPalette?.name === palette.name ? { borderColor: 'var(--brand-primary)' } : {}}
                       title={palette.name}
                     >
                       {/* Three color preview */}
@@ -203,7 +213,7 @@ export default function FloatingToolbar({
                       </div>
                       {/* Selected checkmark */}
                       {selectedPalette?.name === palette.name && (
-                        <div className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1">
+                        <div className="absolute top-1 right-1 text-white rounded-full p-1" style={{ backgroundColor: 'var(--brand-primary)' }}>
                           <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -219,7 +229,8 @@ export default function FloatingToolbar({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full py-3 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-bold rounded-lg transition-colors"
+              className="w-full py-3 disabled:opacity-60 text-white font-bold rounded-lg transition-colors hover:brightness-110"
+              style={{ backgroundColor: 'var(--brand-primary)' }}
             >
               {saving ? 'Saving...' : user ? 'Save Site' : 'Sign Up to Save'}
             </button>

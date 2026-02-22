@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense, createElement } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FloatingToolbar from '@/app/components/FloatingToolbar';
-import EditModeToggle from '@/app/components/EditModeToggle';
 import { EditorProvider } from '@/lib/editor-context';
 import { getTemplateComponent } from '@/app/templates/registry';
 import { getTemplateMetadata } from '@/lib/db/template-queries';
@@ -219,7 +218,7 @@ export default function EditorContent() {
   }
 
   // Convert availablePalettes object to array format for FloatingToolbar
-  const paletteArray: Array<{name: string; primary: string; secondary: string; accent: string}> = Object.entries(availablePalettes).map(
+  const paletteArray: Array<{ name: string; primary: string; secondary: string; accent: string }> = Object.entries(availablePalettes).map(
     ([key, colors]) => ({
       name: key,
       primary: colors.primary || '',
@@ -243,11 +242,26 @@ export default function EditorContent() {
         onSelectPalette={(palette) => handlePaletteChange(palette.name)}
       />
 
-      {/* Edit Mode Toggle */}
-      <EditModeToggle
-        isEditMode={editMode}
-        onChange={setEditMode}
-      />
+      {/* Top Banner */}
+      <div
+        className="fixed top-0 left-0 right-0 border-b p-3 z-[1000] shadow flex justify-center items-center gap-4"
+        style={{ backgroundColor: 'var(--brand-primary)', borderColor: 'var(--brand-primary-dark)' }}
+      >
+        <p className="text-sm text-white max-w-7xl">
+          {editMode ? (
+            <>✏️ <strong>Edit Mode:</strong> Click any pencil icon to edit text</>
+          ) : (
+            <>👁️ <strong>Preview Mode:</strong> Viewing how your site will look to visitors</>
+          )}
+        </p>
+        <button
+          onClick={() => setEditMode(!editMode)}
+          className="px-3 py-1 bg-white text-xs font-bold rounded-[4px] hover:bg-slate-100 transition-colors shadow-sm cursor-pointer"
+          style={{ color: 'var(--brand-primary)' }}
+        >
+          Switch to {editMode ? 'Preview' : 'Edit'} Mode
+        </button>
+      </div>
 
       {/* Template Render */}
       <EditorProvider
@@ -260,12 +274,12 @@ export default function EditorContent() {
           setPalette: handlePaletteChange,
         }}
       >
-        <div className="w-full">
+        <div className="w-full mt-12">
           {templateComponent
             ? createElement(templateComponent, {
-                palette: paletteData,
-                isEditMode: editMode,
-              })
+              palette: paletteData,
+              isEditMode: editMode,
+            })
             : null}
         </div>
       </EditorProvider>

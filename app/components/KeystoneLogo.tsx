@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import KeystoneLogoImage from '@/assets/logo/keystone-logo.png';
 
 interface KeystoneLogoProps {
   href?: string;
@@ -36,7 +37,7 @@ export default function KeystoneLogo({
   const logo = (
     <div className="flex items-center gap-2">
       <Image
-        src="/logos/keystone-logo.png"
+        src={KeystoneLogoImage}
         alt="Keystone"
         width={logoSize.width}
         height={logoSize.height}

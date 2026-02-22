@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import EditorContent from './editor-content';
+import EditorContent from './editor-content-v2';
 
 export default function EditorPage() {
   return (
