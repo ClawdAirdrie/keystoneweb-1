@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getAllTemplateMetadata } from '@/lib/db/template-queries';
 
 interface Template {
   id: string;
@@ -25,34 +24,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Load templates from metadata.json
-    const templatesDir = path.join(process.cwd(), 'public', 'templates');
-    const metadataPath = path.join(templatesDir, 'metadata.json');
-
-    if (!fs.existsSync(metadataPath)) {
-      return NextResponse.json(
-        { error: 'Templates metadata not found' },
-        { status: 500 }
-      );
-    }
-
-    const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
-    const metadataWrapper = JSON.parse(metadataContent);
-    const allTemplates = metadataWrapper.templates || [];
-
-    // Filter by businessType and category
-    const filteredTemplates = allTemplates.filter(
-      (t: any) => t.businessType === businessType && t.category === category
-    );
+    // Fetch from database
+    const dbTemplates = await getAllTemplateMetadata({
+      category,
+      business_type: businessType,
+    });
 
     // Convert to TemplatePreview format
-    const templates: Template[] = filteredTemplates.map((t: any) => ({
-      id: t.id,
+    const templates: Template[] = dbTemplates.map((t) => ({
+      id: t.template_id,
       name: t.name,
       category: t.category,
-      tags: t.tags || [],
-      // Generate imageUrl from unsplash (placeholder)
-      imageUrl: `https://images.unsplash.com/photo-1460925895917-aeb19be489c7?w=400&h=300&fit=crop&t=${encodeURIComponent(t.id)}`,
+      // The tags might be mapped or just omitted if not present in DB
+      tags: [],
+      imageUrl: t.thumbnail_url || `https://images.unsplash.com/photo-1460925895917-aeb19be489c7?w=400&h=300&fit=crop&t=${encodeURIComponent(t.template_id)}`,
     }));
 
     // Paginate

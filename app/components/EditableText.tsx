@@ -82,62 +82,71 @@ export default function EditableText({
   // Edit mode - show inline element with pencil on hover
   if (isEditing) {
     return (
-      <div className="inline-flex items-center gap-2 bg-blue-50 border-2 border-blue-400 rounded px-2 py-1">
+      <Component className={`${className} relative`}>
         <input
           ref={inputRef}
           type="text"
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
-          className="px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+          className="bg-blue-50/80 border-b-2 border-blue-500 text-slate-900 outline-none w-full"
+          style={{
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
+            fontWeight: 'inherit',
+            textAlign: 'inherit',
+            padding: 0,
+            margin: 0,
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleSave();
             if (e.key === 'Escape') handleCancel();
           }}
         />
-        <button
-          onClick={handleSave}
-          className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
-          title="Save (Enter)"
-        >
-          <Check className="w-4 h-4" />
-        </button>
-        <button
-          onClick={handleCancel}
-          className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-          title="Cancel (Esc)"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
+        <div className="absolute right-0 top-full mt-2 flex items-center gap-2 z-[100] whitespace-nowrap">
+          <button
+            onClick={handleSave}
+            className="p-2 bg-green-500 hover:bg-green-600 text-white rounded shadow-lg transition-colors flex items-center gap-1 text-sm font-bold"
+            title="Save (Enter)"
+          >
+            <Check className="w-4 h-4" /> Save
+          </button>
+          <button
+            onClick={handleCancel}
+            className="p-2 bg-red-500 hover:bg-red-600 text-white rounded shadow-lg transition-colors flex items-center gap-1 text-sm font-bold"
+            title="Cancel (Esc)"
+          >
+            <X className="w-4 h-4" /> Cancel
+          </button>
+        </div>
+      </Component>
     );
   }
 
-  // Edit mode, not currently editing: show text with pencil icon always visible
+  // Edit mode, not currently editing: show text with pencil icon on hover
   return (
-    <div
-      className="relative inline-block"
+    <Component
+      className={`${className} cursor-text pointer-events-auto transition-colors`}
+      onClick={() => setIsEditing(true)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Component 
-        className={`${className} ${
-          isHovered ? 'bg-blue-100 outline outline-2 outline-blue-400 outline-offset-1' : ''
-        } transition-colors cursor-text py-1 px-1 inline-block pointer-events-auto`}
-        onClick={() => setIsEditing(true)}
-      >
+      <span className={`relative inline-block ${isHovered ? 'bg-blue-100/50 outline outline-2 outline-blue-400 outline-offset-2 rounded-sm' : 'bg-blue-100/20 md:bg-transparent outline outline-1 outline-blue-300 md:outline-none outline-offset-2 rounded-sm'}`}>
         {displayText}
-      </Component>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsEditing(true);
-        }}
-        className="absolute -right-8 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-md z-50"
-        title={`Edit: ${contentKey}`}
-        onMouseDown={(e) => e.preventDefault()}
-      >
-        <Edit2 className="w-4 h-4" />
-      </button>
-    </div>
+
+        {/* Desktop: Show pencil on hover. Mobile: Always show pencil */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+          className={`absolute -right-8 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full transition-all shadow-md z-50 ${isHovered ? 'opacity-100 scale-100' : 'opacity-100 scale-100 md:opacity-0 md:scale-90'
+            }`}
+          title={`Edit: ${contentKey}`}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          <Edit2 className="w-3 h-3" />
+        </button>
+      </span>
+    </Component>
   );
 }

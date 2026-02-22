@@ -105,6 +105,7 @@ export default function EditorContent() {
     } catch (err) {
       console.error('Error fetching site:', err);
       setError('Failed to load site');
+    } finally {
       setLoading(false);
     }
   };
