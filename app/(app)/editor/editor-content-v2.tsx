@@ -37,9 +37,9 @@ export default function EditorContent() {
   const [saving, setSaving] = useState(false);
   const [siteTitle, setSiteTitle] = useState('My Website');
   const [error, setError] = useState<string | null>(null);
-  const { uploadImage } = useImageUpload(siteId || '');
 
   const siteId = searchParams.get('siteId');
+  const { uploadImage } = useImageUpload(siteId || '');
 
   // Auth check and site loading
   useEffect(() => {
