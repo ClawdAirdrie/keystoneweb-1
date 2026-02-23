@@ -1,6 +1,7 @@
 'use client';
 
 import EditableText from '@/app/components/EditableText';
+import EditableImage from '@/app/components/EditableImage';
 import { useEditorContext } from '@/lib/editor-context';
 
 interface MasterTemplateProps {
@@ -67,6 +68,21 @@ export function MinimalWhiteTemplate({ palette, isEditMode }: MasterTemplateProp
                     >
                         Discover Our Method
                     </button>
+                </div>
+            </section>
+
+            {/* Featured Image Section */}
+            <section className="py-24 bg-gray-50">
+                <div className="max-w-5xl mx-auto px-6">
+                    <EditableImage
+                        contentKey="featuredImage"
+                        imageUrl={content.featuredImage}
+                        isEditMode={isEditMode}
+                        onSave={updateContent}
+                        onUpload={context?.uploadImage}
+                        className="w-full h-96 rounded-2xl shadow-lg object-cover"
+                        placeholder="Click to upload featured image"
+                    />
                 </div>
             </section>
 

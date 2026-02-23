@@ -8,6 +8,7 @@ import { EditorProvider } from '@/lib/editor-context';
 import { getTemplateComponent } from '@/app/templates/registry';
 import { getTemplateMetadata } from '@/lib/db/template-queries';
 import { useAuth } from '@/lib/auth/context';
+import { useImageUpload } from '@/lib/hooks/useImageUpload';
 
 interface SiteData {
   id: string;
@@ -38,6 +39,7 @@ export default function EditorContent() {
   const [error, setError] = useState<string | null>(null);
 
   const siteId = searchParams.get('siteId');
+  const { uploadImage } = useImageUpload(siteId || '');
 
   // Auth check and site loading
   useEffect(() => {
@@ -272,6 +274,8 @@ export default function EditorContent() {
           updateContent: handleUpdateContent,
           palette: paletteData,
           availablePalettes: Object.keys(availablePalettes),
+          siteId: siteId || undefined,
+          uploadImage: uploadImage,
           setPalette: handlePaletteChange,
         }}
       >

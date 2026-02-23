@@ -20,6 +20,12 @@ export interface EditorContextType {
 
   /** Change the active palette */
   setPalette?: (paletteKey: string) => void;
+
+  /** Site ID for image uploads */
+  siteId?: string;
+
+  /** Function to upload image to Supabase Storage */
+  uploadImage?: (file: File, contentKey: string) => Promise<string>;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);

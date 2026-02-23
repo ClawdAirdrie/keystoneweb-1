@@ -1,6 +1,7 @@
 'use client';
 
 import EditableText from '@/app/components/EditableText';
+import EditableImage from '@/app/components/EditableImage';
 import { Palette } from 'lucide-react';
 import { useEditorContext } from '@/lib/editor-context';
 
@@ -76,12 +77,15 @@ export function ClassicProTemplate({ palette, isEditMode }: MasterTemplateProps)
                             Get a Free Quote
                         </button>
                     </div>
-                    <div className="rounded-lg shadow-xl bg-gray-300 h-96 flex flex-col items-center justify-center text-gray-500 overflow-hidden relative group">
-                        <span className="text-xl font-medium">✨ Hero Image Area ✨</span>
-                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span className="bg-white/90 text-sm px-4 py-2 rounded-full font-medium shadow">Click to swap image</span>
-                        </div>
-                    </div>
+                    <EditableImage
+                        contentKey="heroImage"
+                        imageUrl={content.heroImage}
+                        isEditMode={isEditMode}
+                        onSave={updateContent}
+                        onUpload={context?.uploadImage}
+                        className="w-full h-96 rounded-lg shadow-xl"
+                        placeholder="Click to upload hero image"
+                    />
                 </div>
             </section>
 
