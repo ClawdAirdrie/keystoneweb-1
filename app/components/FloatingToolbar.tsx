@@ -396,12 +396,13 @@ export default function FloatingToolbar({
               </div>
             )}
 
-            {/* Save Button - Brand Primary Color */}
+            {/* Save Button - Brand Primary Color - Disabled when no changes */}
             <button
               onClick={handleSave}
-              disabled={saving}
-              className="w-full py-3 text-white font-bold rounded-lg transition-colors hover:brightness-110 disabled:opacity-60"
+              disabled={saving || changes.length === 0}
+              className="w-full py-3 text-white font-bold rounded-lg transition-colors hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ backgroundColor: 'var(--brand-primary)' }}
+              title={changes.length === 0 ? 'No changes to save' : 'Save your changes'}
             >
               {saving ? 'Saving...' : user ? 'Save Site' : 'Sign Up to Save'}
             </button>

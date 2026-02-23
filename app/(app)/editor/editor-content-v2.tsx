@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, createElement } from 'react';
+import { useState, useEffect, Suspense, createElement, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FloatingToolbar from '@/app/components/FloatingToolbar';
@@ -9,6 +9,7 @@ import { getTemplateComponent } from '@/app/templates/registry';
 import { getTemplateMetadata } from '@/lib/db/template-queries';
 import { useAuth } from '@/lib/auth/context';
 import { useImageUpload } from '@/lib/hooks/useImageUpload';
+import { useChangeTracking } from '@/lib/hooks/useChangeTracking';
 
 interface SiteData {
   id: string;
@@ -37,6 +38,12 @@ export default function EditorContent() {
   const [saving, setSaving] = useState(false);
   const [siteTitle, setSiteTitle] = useState('My Website');
   const [error, setError] = useState<string | null>(null);
+
+  // Change tracking
+  const { changes, addChange, undo, redo, canUndo, canRedo, clearChanges } = useChangeTracking();
+  const initialTitleRef = useRef<string>('My Website');
+  const initialPaletteRef = useRef<string>('default');
+  const initialContentRef = useRef<Record<string, string>>({});
 
   const siteId = searchParams.get('siteId');
   const { uploadImage } = useImageUpload(siteId || '');
@@ -102,8 +109,18 @@ export default function EditorContent() {
 
       const data = await res.json();
       setSite(data);
-      setSiteTitle(data.title || 'My Website');
-      setEditableContent(data.designData || {});
+      const title = data.title || 'My Website';
+      const content = data.designData || {};
+      const selectedPalette = content.__selectedPalette || 'default';
+
+      // Store initial values for change detection
+      initialTitleRef.current = title;
+      initialPaletteRef.current = selectedPalette;
+      initialContentRef.current = { ...content };
+
+      setSiteTitle(title);
+      setEditableContent(content);
+      setSelectedPaletteKey(selectedPalette);
     } catch (err) {
       console.error('Error fetching site:', err);
       setError('Failed to load site');
@@ -140,10 +157,27 @@ export default function EditorContent() {
   };
 
   const handleUpdateContent = (key: string, value: string) => {
-    setEditableContent((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setEditableContent((prev) => {
+      const updated = {
+        ...prev,
+        [key]: value,
+      };
+
+      // Track content change
+      const oldValue = prev[key] || '';
+      if (oldValue !== value) {
+        addChange('content', `Content: ${key}`, oldValue, value);
+      }
+
+      return updated;
+    });
+  };
+
+  const handleSiteTitleChange = (newTitle: string) => {
+    if (newTitle !== siteTitle) {
+      addChange('siteTitle', 'Site Name', siteTitle, newTitle);
+    }
+    setSiteTitle(newTitle);
   };
 
   const handleSaveDesign = async () => {
@@ -179,6 +213,7 @@ export default function EditorContent() {
       const updated = await res.json();
       setSite(updated);
       setError(null);
+      clearChanges();
       alert('Design saved successfully!');
     } catch (err) {
       console.error('Error saving design:', err);
@@ -189,6 +224,9 @@ export default function EditorContent() {
   };
 
   const handlePaletteChange = (paletteKey: string) => {
+    if (paletteKey !== selectedPaletteKey) {
+      addChange('palette', 'Color Palette', selectedPaletteKey, paletteKey);
+    }
     setSelectedPaletteKey(paletteKey);
     const palette = availablePalettes[paletteKey];
     if (palette) {
@@ -237,12 +275,18 @@ export default function EditorContent() {
       {/* Floating Toolbar */}
       <FloatingToolbar
         siteTitle={siteTitle}
-        onSiteTitle={setSiteTitle}
+        onSiteTitle={handleSiteTitleChange}
         onSave={handleSaveDesign}
         saving={saving}
         templatePalettes={paletteArray}
         selectedPalette={currentPalette}
         onSelectPalette={(palette) => handlePaletteChange(palette.name)}
+        changes={changes}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        currentSiteId={siteId || undefined}
       />
 
       {/* Top Banner */}
