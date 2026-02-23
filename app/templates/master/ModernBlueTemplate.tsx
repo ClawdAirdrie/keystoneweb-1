@@ -1,6 +1,7 @@
 'use client';
 
 import EditableText from '@/app/components/EditableText';
+import EditableImage from '@/app/components/EditableImage';
 import { useEditorContext } from '@/lib/editor-context';
 
 interface MasterTemplateProps {
@@ -90,6 +91,32 @@ export function ModernBlueTemplate({ palette, isEditMode }: MasterTemplateProps)
                             </button>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            {/* Featured Image Section */}
+            <section className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <EditableText
+                            as="h2"
+                            contentKey="featuredImageTitle"
+                            content={content.featuredImageTitle}
+                            defaultValue="Our Work"
+                            isEditMode={isEditMode}
+                            onSave={updateContent}
+                            className="text-4xl font-bold mb-4 text-slate-900"
+                        />
+                    </div>
+                    <EditableImage
+                        contentKey="featuredImage"
+                        imageUrl={content.featuredImage}
+                        isEditMode={isEditMode}
+                        onSave={updateContent}
+                        onUpload={context?.uploadImage}
+                        className="w-full h-96 rounded-2xl shadow-2xl object-cover"
+                        placeholder="Click to upload featured image"
+                    />
                 </div>
             </section>
 
