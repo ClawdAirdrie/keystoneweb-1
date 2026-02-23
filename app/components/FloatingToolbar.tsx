@@ -67,6 +67,7 @@ export default function FloatingToolbar({
   const dragStartY = useRef<number>(0);
   const dragStartHeight = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
+  const [showSiteSwitcher, setShowSiteSwitcher] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !user) return;
@@ -182,138 +183,117 @@ export default function FloatingToolbar({
           </div>
 
           {/* Content */}
-          <div className="px-6 pb-8 pt-6">
-            {/* Site Info Section */}
-            <div className="bg-slate-50 rounded-lg p-4 mb-6">
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-semibold text-slate-600">Site Name: </span>
-                  <span className="text-slate-900">{siteTitle}</span>
-                </div>
-                {templateName && (
-                  <div>
-                    <span className="font-semibold text-slate-600">Template: </span>
-                    <span className="text-slate-900">{templateName}</span>
-                  </div>
-                )}
-                {selectedPalette && (
-                  <div>
-                    <span className="font-semibold text-slate-600">Color Palette: </span>
-                    <span className="text-slate-900">{selectedPalette.name}</span>
-                  </div>
-                )}
+          <div className="px-6 pb-8 pt-6 space-y-8">
+            {/* Currently Editing Section */}
+            <div>
+              <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wide mb-4">Currently Editing</h3>
+              
+              {/* Site Name Input */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={siteTitle}
+                  onChange={(e) => onSiteTitle(e.target.value)}
+                  className="w-full text-2xl font-bold text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-red-600 focus:outline-none pb-2 placeholder-slate-400 transition-colors"
+                  placeholder="My Awesome Website"
+                />
               </div>
+
+              {/* Switch Sites Button - Only show if user has multiple sites */}
+              {user && userSites.length > 1 && (
+                <button
+                  onClick={() => setShowSiteSwitcher(!showSiteSwitcher)}
+                  className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Switch Sites
+                </button>
+              )}
+
+              {/* Site Switcher Dropdown - Only for authenticated users with multiple sites */}
+              {user && userSites.length > 1 && showSiteSwitcher && (
+                <div className="mt-3 space-y-2 max-h-40 overflow-y-auto bg-slate-50 rounded-lg p-3 border border-slate-200">
+                  {userSites.map((site) => (
+                    <button
+                      key={site.id}
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push(`/editor?siteId=${site.id}`);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded transition-all text-sm ${
+                        currentSiteId === site.id
+                          ? 'bg-red-100 text-red-900 font-semibold'
+                          : 'bg-white text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {site.title || `Site ${site.id.slice(0, 8)}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* New Site Button */}
+              {user && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push('/onboarding');
+                  }}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors mt-3"
+                  title="Create a new site"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create New
+                </button>
+              )}
             </div>
 
-            {/* Site Switcher - Only for authenticated users */}
-            {user && (
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="block text-sm font-semibold text-slate-900">
-                    Your Sites
-                  </label>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      router.push('/onboarding');
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors"
-                    title="Create a new site"
-                  >
-                    <Plus className="w-4 h-4" />
-                    New
-                  </button>
+            {/* Selected Template Section */}
+            {templateName && (
+              <div>
+                <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wide mb-3">Selected Template</h3>
+                <div className="bg-slate-50 rounded-lg p-4 mb-3">
+                  <div className="font-semibold text-slate-900">{templateName}</div>
                 </div>
-
-                {loadingSites ? (
-                  <p className="text-sm text-slate-600">Loading sites...</p>
-                ) : userSites.length === 0 ? (
-                  <p className="text-sm text-slate-600">No sites yet. Create one to get started.</p>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {userSites.map((site) => (
-                      <button
-                        key={site.id}
-                        onClick={() => {
-                          setIsOpen(false);
-                          router.push(`/editor?siteId=${site.id}`);
-                        }}
-                        className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
-                          currentSiteId === site.id
-                            ? 'border-red-600 bg-red-50'
-                            : 'border-slate-200 hover:border-slate-400 bg-white'
-                        }`}
-                      >
-                        <div className="font-medium text-slate-900">
-                          {site.title || `Site ${site.id.slice(0, 8)}`}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {site.businessType} • {site.category}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <button className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                  Switch Template
+                </button>
+                <p className="text-xs text-slate-500 mt-2">
+                  ⚠️ Switching templates will lose unsaved content that doesn't exist in the new template
+                </p>
               </div>
             )}
 
-            {/* Site Title Edit */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-slate-900 mb-2">
-                Edit Site Name
-              </label>
-              <input
-                type="text"
-                value={siteTitle}
-                onChange={(e) => onSiteTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent"
-                placeholder="My Awesome Website"
-              />
-            </div>
-
-            {/* Color Palette Selector */}
+            {/* Selected Color Palette Section */}
             {templatePalettes && templatePalettes.length > 0 && (
-              <div className="mb-8">
-                <label className="block text-sm font-semibold text-slate-900 mb-4">
-                  Color Palette
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div>
+                <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wide mb-3">Color Palette</h3>
+                <div className="grid grid-cols-3 gap-2">
                   {templatePalettes.map((palette) => (
                     <button
                       key={palette.name}
                       onClick={() => onSelectPalette?.(palette)}
-                      className={`group relative overflow-hidden rounded-lg border-2 transition-all hover:shadow-md ${selectedPalette?.name === palette.name
+                      className={`group relative overflow-hidden rounded-lg border-2 transition-all h-12 ${
+                        selectedPalette?.name === palette.name
                           ? 'shadow-lg'
                           : 'border-slate-200 hover:border-slate-400'
-                        }`}
+                      }`}
                       style={selectedPalette?.name === palette.name ? { borderColor: 'var(--brand-primary)' } : {}}
                       title={palette.name}
                     >
                       {/* Three color preview */}
-                      <div className="h-16 flex">
-                        <div
-                          className="flex-1"
-                          style={{ backgroundColor: palette.primary }}
-                        />
-                        <div
-                          className="flex-1"
-                          style={{ backgroundColor: palette.secondary }}
-                        />
-                        <div
-                          className="flex-1"
-                          style={{ backgroundColor: palette.accent }}
-                        />
+                      <div className="h-full flex">
+                        <div className="flex-1" style={{ backgroundColor: palette.primary }} />
+                        <div className="flex-1" style={{ backgroundColor: palette.secondary }} />
+                        <div className="flex-1" style={{ backgroundColor: palette.accent }} />
                       </div>
                       {/* Palette name on hover */}
                       <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white text-xs font-semibold text-center px-2">
-                          {palette.name}
-                        </span>
+                        <span className="text-white text-xs font-semibold text-center px-1">{palette.name}</span>
                       </div>
                       {/* Selected checkmark */}
                       {selectedPalette?.name === palette.name && (
-                        <div className="absolute top-1 right-1 text-white rounded-full p-1" style={{ backgroundColor: 'var(--brand-primary)' }}>
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="absolute top-1 right-1 text-white rounded-full p-0.5" style={{ backgroundColor: 'var(--brand-primary)' }}>
+                          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
@@ -323,6 +303,8 @@ export default function FloatingToolbar({
                 </div>
               </div>
             )}
+
+            {/* Color Palette Selector moved above */}
 
             {/* Unsaved Changes Section */}
             {changes && changes.length > 0 && (
