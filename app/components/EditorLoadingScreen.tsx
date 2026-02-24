@@ -86,6 +86,16 @@ export default function EditorLoadingScreen() {
                         );
                     })}
                 </svg>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.5, duration: 1 }}
+                    className="flex justify-center items-center gap-2 mt-4"
+                >
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2.5 h-2.5 rounded-full bg-white/70 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </motion.div>
             </div>
         </div>
     );
