@@ -199,6 +199,7 @@ export default function EditorContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           siteId: site.id,
+          title: siteTitle,
           designData,
         }),
       });
