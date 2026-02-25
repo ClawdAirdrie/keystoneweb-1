@@ -209,9 +209,9 @@ export async function PATCH(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // Add title if provided
+    // Map frontend 'title' to DB 'site_slug' column
     if (title) {
-      updatePayload.title = title;
+      updatePayload.site_slug = title;
     }
 
     const { data: updatedSite, error: updateError } = await supabase
