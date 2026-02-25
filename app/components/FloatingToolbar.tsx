@@ -32,6 +32,7 @@ interface FloatingToolbarProps {
   templatePalettes?: Palette[];
   selectedPalette?: Palette;
   onSelectPalette?: (palette: Palette) => void;
+  onCustomColorChange?: (type: 'primary' | 'secondary' | 'accent', value: string) => void;
   onSave: () => void;
   saving?: boolean;
   changes?: Change[];
@@ -49,6 +50,7 @@ export default function FloatingToolbar({
   templatePalettes = [],
   selectedPalette,
   onSelectPalette,
+  onCustomColorChange,
   onSave,
   saving = false,
   changes = [],
@@ -153,7 +155,7 @@ export default function FloatingToolbar({
       {/* Drawer Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40"
+          className="fixed inset-0 bg-black bg-opacity-30 z-40 overscroll-none touch-none"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -162,7 +164,7 @@ export default function FloatingToolbar({
       {isOpen && (
         <div
           ref={drawerRef}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto transition-all duration-300 ease-out animate-in slide-in-from-bottom-10"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto overscroll-contain transition-all duration-300 ease-out animate-in slide-in-from-bottom-10"
           onMouseMove={handleDragMove}
           onMouseUp={handleDragEnd}
           onMouseLeave={handleDragEnd}
@@ -187,9 +189,9 @@ export default function FloatingToolbar({
             {/* Currently Editing Section */}
             <div>
               <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wide mb-4">Currently Editing</h3>
-              
-              {/* Site Name Input */}
-              <div className="mb-4">
+
+              {/* Site Name Input & Inline Switcher */}
+              <div className="relative flex items-center mb-6">
                 <input
                   type="text"
                   value={siteTitle}
@@ -197,54 +199,67 @@ export default function FloatingToolbar({
                   className="w-full text-2xl font-bold text-slate-900 bg-transparent border-b-2 border-slate-300 focus:border-red-600 focus:outline-none pb-2 placeholder-slate-400 transition-colors"
                   placeholder="My Awesome Website"
                 />
+
+                {/* Always show dropdown toggle if authenticated */}
+                {user && (
+                  <button
+                    onClick={() => setShowSiteSwitcher(!showSiteSwitcher)}
+                    className="absolute right-0 bottom-2 p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                    title="Switch or create sites"
+                  >
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${showSiteSwitcher ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
+
+                {/* Dropdown Menu */}
+                {user && showSiteSwitcher && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2">
+                    <div className="max-h-60 overflow-y-auto outline-none p-2 space-y-1">
+                      {/* Existing Sites */}
+                      {userSites.length > 0 ? (
+                        <>
+                          <div className="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Your Sites</div>
+                          {userSites.map((site) => (
+                            <button
+                              key={site.id}
+                              onClick={() => {
+                                setIsOpen(false);
+                                setShowSiteSwitcher(false);
+                                router.push(`/editor?siteId=${site.id}`);
+                              }}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center justify-between group ${currentSiteId === site.id
+                                ? 'bg-red-50 text-red-900 font-semibold border border-red-100'
+                                : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                                }`}
+                            >
+                              <span className="truncate pr-4">{site.siteSlug || `Site ${site.id.slice(0, 8)}`}</span>
+                              {currentSiteId === site.id && (
+                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                              )}
+                            </button>
+                          ))}
+                          <div className="h-px bg-slate-100 my-2 mx-1" />
+                        </>
+                      ) : (
+                        <div className="px-3 py-4 text-sm text-slate-500 text-center">No other sites found</div>
+                      )}
+
+                      {/* Create New Option */}
+                      <button
+                        onClick={() => {
+                          setIsOpen(false);
+                          setShowSiteSwitcher(false);
+                          router.push('/onboarding');
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-lg transition-all text-sm flex items-center gap-2 text-red-600 hover:bg-red-50 font-medium mt-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Create New Site
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {/* Switch Sites Button - Only show if user has multiple sites */}
-              {user && userSites.length > 1 && (
-                <button
-                  onClick={() => setShowSiteSwitcher(!showSiteSwitcher)}
-                  className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  Switch Sites
-                </button>
-              )}
-
-              {/* Site Switcher Dropdown - Only for authenticated users with multiple sites */}
-              {user && userSites.length > 1 && showSiteSwitcher && (
-                <div className="mt-3 space-y-2 max-h-40 overflow-y-auto bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  {userSites.map((site) => (
-                    <button
-                      key={site.id}
-                      onClick={() => {
-                        setIsOpen(false);
-                        router.push(`/editor?siteId=${site.id}`);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded transition-all text-sm ${
-                        currentSiteId === site.id
-                          ? 'bg-red-100 text-red-900 font-semibold'
-                          : 'bg-white text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {site.siteSlug || `Site ${site.id.slice(0, 8)}`}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* New Site Button */}
-              {user && (
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    router.push('/onboarding');
-                  }}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 transition-colors mt-3"
-                  title="Create a new site"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create New
-                </button>
-              )}
             </div>
 
             {/* Selected Template Section */}
@@ -267,16 +282,15 @@ export default function FloatingToolbar({
             {templatePalettes && templatePalettes.length > 0 && (
               <div>
                 <h3 className="text-xs font-bold uppercase text-slate-500 tracking-wide mb-3">Color Palette</h3>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {templatePalettes.map((palette) => (
                     <button
                       key={palette.name}
                       onClick={() => onSelectPalette?.(palette)}
-                      className={`group relative overflow-hidden rounded-lg border-2 transition-all h-12 ${
-                        selectedPalette?.name === palette.name
-                          ? 'shadow-lg'
-                          : 'border-slate-200 hover:border-slate-400'
-                      }`}
+                      className={`group relative overflow-hidden rounded-lg border-2 transition-all h-12 ${selectedPalette?.name === palette.name
+                        ? 'shadow-lg'
+                        : 'border-slate-200 hover:border-slate-400'
+                        }`}
                       style={selectedPalette?.name === palette.name ? { borderColor: 'var(--brand-primary)' } : {}}
                       title={palette.name}
                     >
@@ -288,7 +302,7 @@ export default function FloatingToolbar({
                       </div>
                       {/* Palette name on hover */}
                       <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white text-xs font-semibold text-center px-1">{palette.name}</span>
+                        <span className="capitalize text-white text-xs font-semibold text-center px-1">{palette.name}</span>
                       </div>
                       {/* Selected checkmark */}
                       {selectedPalette?.name === palette.name && (
@@ -301,6 +315,39 @@ export default function FloatingToolbar({
                     </button>
                   ))}
                 </div>
+
+                {/* Custom Color Pickers - Only show when "custom" is selected */}
+                {selectedPalette?.name === 'custom' && (
+                  <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center gap-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Primary</span>
+                      <input
+                        type="color"
+                        value={selectedPalette.primary}
+                        onChange={(e) => onCustomColorChange?.('primary', e.target.value)}
+                        className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                      />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Secondary</span>
+                      <input
+                        type="color"
+                        value={selectedPalette.secondary}
+                        onChange={(e) => onCustomColorChange?.('secondary', e.target.value)}
+                        className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                      />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Accent</span>
+                      <input
+                        type="color"
+                        value={selectedPalette.accent}
+                        onChange={(e) => onCustomColorChange?.('accent', e.target.value)}
+                        className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

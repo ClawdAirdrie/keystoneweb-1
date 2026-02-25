@@ -26,6 +26,8 @@ export function useChangeTracking() {
     historyIndex: 0,
   });
 
+  const [lastAction, setLastAction] = useState<{ type: 'undo' | 'redo', timestamp: number, changes: Change[] } | null>(null);
+
   // Add a new change and update history
   const addChange = useCallback((
     field: string,
@@ -83,9 +85,13 @@ export function useChangeTracking() {
       if (prev.historyIndex <= 0) return prev;
 
       const newIndex = prev.historyIndex - 1;
+      const newChanges = prev.history[newIndex];
+
+      setLastAction({ type: 'undo', timestamp: Date.now(), changes: newChanges });
+
       return {
         ...prev,
-        changes: prev.history[newIndex],
+        changes: newChanges,
         historyIndex: newIndex,
       };
     });
@@ -97,9 +103,13 @@ export function useChangeTracking() {
       if (prev.historyIndex >= prev.history.length - 1) return prev;
 
       const newIndex = prev.historyIndex + 1;
+      const newChanges = prev.history[newIndex];
+
+      setLastAction({ type: 'redo', timestamp: Date.now(), changes: newChanges });
+
       return {
         ...prev,
-        changes: prev.history[newIndex],
+        changes: newChanges,
         historyIndex: newIndex,
       };
     });
@@ -123,5 +133,6 @@ export function useChangeTracking() {
     canRedo: state.historyIndex < state.history.length - 1,
     hasChanges: state.changes.length > 0,
     clearChanges,
+    lastAction,
   };
 }

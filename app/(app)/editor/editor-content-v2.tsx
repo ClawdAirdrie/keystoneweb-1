@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, createElement, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { Eye, Pencil } from 'lucide-react';
 import FloatingToolbar from '@/app/components/FloatingToolbar';
 import { EditorProvider } from '@/lib/editor-context';
 import { getTemplateComponent } from '@/app/templates/registry';
@@ -41,7 +42,9 @@ export default function EditorContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Change tracking
-  const { changes, addChange, undo, redo, canUndo, canRedo, clearChanges } = useChangeTracking();
+  const changesHook = useChangeTracking();
+  const { addChange, clearChanges } = changesHook;
+
   const initialTitleRef = useRef<string>('My Website');
   const initialPaletteRef = useRef<string>('default');
   const initialContentRef = useRef<Record<string, string>>({});
@@ -69,7 +72,7 @@ export default function EditorContent() {
   useEffect(() => {
     if (!site?.selectedTemplateId) return;
 
-    loadTemplateComponent(site.selectedTemplateId);
+    loadTemplateComponent(site.selectedTemplateId, site.designData?.__selectedPalette);
   }, [site?.selectedTemplateId]);
 
   const redirectToLatestSite = async () => {
@@ -130,27 +133,37 @@ export default function EditorContent() {
     }
   };
 
-  const loadTemplateComponent = async (templateId: string) => {
+  const loadTemplateComponent = async (templateId: string, savedPaletteKey?: string) => {
     try {
-      // Get template component
-      const component = await getTemplateComponent(templateId);
+      // Fetch both component and metadata concurrently for speed
+      const [component, metadata] = await Promise.all([
+        getTemplateComponent(templateId),
+        getTemplateMetadata(templateId)
+      ]);
+
       if (!component) {
         console.error(`Template component not found: ${templateId}`);
         setError(`Template not found: ${templateId}`);
         return;
       }
-      setTemplateComponent(() => component);
 
-      // Get template metadata (palettes, customizables)
-      const metadata = await getTemplateMetadata(templateId);
+      // Process and apply metadata (palettes, customizables) FIRST
       if (metadata) {
         const palettesObj = metadata.palettes || {};
         const paletteKeys = Object.keys(palettesObj);
         setAvailablePalettes(palettesObj);
-        const firstKey = paletteKeys[0] || 'default';
-        setSelectedPaletteKey(firstKey);
-        setPaletteData(palettesObj[firstKey] || {});
+
+        // Use the saved palette key if it exists in the new metadata, otherwise default to first
+        const activeKey = (savedPaletteKey && paletteKeys.includes(savedPaletteKey))
+          ? savedPaletteKey
+          : (paletteKeys[0] || 'default');
+
+        setSelectedPaletteKey(activeKey);
+        setPaletteData(palettesObj[activeKey] || {});
       }
+
+      // NOW we set the component, so when it initially renders, it instantly has the correct palette loaded!
+      setTemplateComponent(() => component);
     } catch (err) {
       console.error('Error loading template:', err);
       setError('Failed to load template');
@@ -173,6 +186,49 @@ export default function EditorContent() {
       return updated;
     });
   };
+
+  // Reconstruct state when History Undo/Redo is triggered
+  useEffect(() => {
+    const action = changesHook.lastAction;
+    if (!action) return;
+
+    // We reconstruct state from scratch using standard refs to ensure absolute accuracy
+    let restoredTitle = initialTitleRef.current;
+    let restoredPalette = initialPaletteRef.current;
+    let restoredContent = { ...initialContentRef.current };
+
+    // Simply replay all changes currently active in the history array top-down!
+    for (const change of action.changes) {
+      if (change.field === 'siteTitle') {
+        restoredTitle = change.to;
+      } else if (change.field === 'palette') {
+        restoredPalette = change.to;
+      } else if (change.field === 'content') {
+        // change.label looks like "Content: heroTitle", we just need the key
+        const key = change.label.replace('Content: ', '');
+        restoredContent[key] = change.to;
+      }
+    }
+
+    // Apply the restored state completely!
+    setSiteTitle(restoredTitle);
+    setSelectedPaletteKey(restoredPalette);
+
+    const palette = restoredPalette === 'custom'
+      ? {
+        primary: restoredContent.__customPalette_primary || '#0f172a',
+        secondary: restoredContent.__customPalette_secondary || '#64748b',
+        accent: restoredContent.__customPalette_accent || '#cbd5e1',
+      }
+      : availablePalettes[restoredPalette];
+
+    if (palette) {
+      setPaletteData(palette);
+    }
+
+    setEditableContent(restoredContent);
+
+  }, [changesHook.lastAction, availablePalettes]);
 
   const handleSiteTitleChange = (newTitle: string) => {
     if (newTitle !== siteTitle) {
@@ -229,10 +285,27 @@ export default function EditorContent() {
       addChange('palette', 'Color Palette', selectedPaletteKey, paletteKey);
     }
     setSelectedPaletteKey(paletteKey);
-    const palette = availablePalettes[paletteKey];
-    if (palette) {
-      setPaletteData(palette);
+
+    if (paletteKey === 'custom') {
+      setPaletteData({
+        primary: editableContent.__customPalette_primary || '#0f172a',
+        secondary: editableContent.__customPalette_secondary || '#64748b',
+        accent: editableContent.__customPalette_accent || '#cbd5e1',
+      });
+    } else {
+      const palette = availablePalettes[paletteKey];
+      if (palette) {
+        setPaletteData(palette);
+      }
     }
+  };
+
+  const handleCustomColorChange = (colorType: 'primary' | 'secondary' | 'accent', value: string) => {
+    handleUpdateContent(`__customPalette_${colorType}`, value);
+    if (selectedPaletteKey !== 'custom') {
+      handlePaletteChange('custom');
+    }
+    setPaletteData(prev => ({ ...prev, [colorType]: value }));
   };
 
   if (loading) {
@@ -261,7 +334,16 @@ export default function EditorContent() {
     })
   );
 
-  const currentPalette = paletteArray.find(p => p.name === selectedPaletteKey) as any;
+  // Add the custom palette option
+  const customPalette = {
+    name: 'custom',
+    primary: editableContent.__customPalette_primary || '#0f172a',
+    secondary: editableContent.__customPalette_secondary || '#64748b',
+    accent: editableContent.__customPalette_accent || '#cbd5e1',
+  };
+  paletteArray.push(customPalette);
+
+  const currentPalette = paletteArray.find(p => p.name === selectedPaletteKey) || customPalette;
 
   return (
     <div className="relative min-h-screen">
@@ -274,29 +356,30 @@ export default function EditorContent() {
         templatePalettes={paletteArray}
         selectedPalette={currentPalette}
         onSelectPalette={(palette) => handlePaletteChange(palette.name)}
-        changes={changes}
-        onUndo={undo}
-        onRedo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
+        onCustomColorChange={handleCustomColorChange}
+        changes={changesHook.changes}
+        onUndo={changesHook.undo}
+        onRedo={changesHook.redo}
+        canUndo={changesHook.canUndo}
+        canRedo={changesHook.canRedo}
         currentSiteId={siteId || undefined}
       />
 
-      {/* Top Banner */}
+      {/* Top Banner (Sticky so it naturally pushes content down as it wraps on mobile) */}
       <div
-        className="fixed top-0 left-0 right-0 border-b p-3 z-[1000] shadow flex justify-center items-center gap-4"
+        className="sticky top-0 left-0 right-0 border-b p-3 z-[1000] shadow flex justify-center items-center gap-4 flex-wrap"
         style={{ backgroundColor: 'var(--brand-primary)', borderColor: 'var(--brand-primary-dark)' }}
       >
-        <p className="text-sm text-white max-w-7xl">
+        <p className="text-sm text-white max-w-7xl text-center">
           {editMode ? (
-            <>✏️ <strong>Edit Mode:</strong> Click any pencil icon to edit text</>
+            <><Pencil className="inline-block w-4 h-4"></Pencil> <strong>Edit Mode:</strong> Click any element to edit text</>
           ) : (
-            <>👁️ <strong>Preview Mode:</strong> Viewing how your site will look to visitors</>
+            <><Eye className="inline-block w-4 h-4"></Eye> <strong>Preview Mode:</strong> Viewing how your site will look to visitors</>
           )}
         </p>
         <button
           onClick={() => setEditMode(!editMode)}
-          className="px-3 py-1 bg-white text-xs font-bold rounded-[4px] hover:bg-slate-100 transition-colors shadow-sm cursor-pointer"
+          className="px-3 py-1 bg-white text-xs font-bold rounded-[4px] hover:bg-slate-100 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
           style={{ color: 'var(--brand-primary)' }}
         >
           Switch to {editMode ? 'Preview' : 'Edit'} Mode
@@ -316,7 +399,7 @@ export default function EditorContent() {
           setPalette: handlePaletteChange,
         }}
       >
-        <div className="w-full mt-12">
+        <div className="w-full">
           {templateComponent
             ? createElement(templateComponent, {
               palette: paletteData,
