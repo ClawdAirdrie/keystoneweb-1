@@ -198,8 +198,7 @@ export default function EditorContent() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: site.id,
-          title: siteTitle,
+          siteId: site.id,
           designData,
         }),
       });
