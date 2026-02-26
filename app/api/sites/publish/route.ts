@@ -50,13 +50,14 @@ export async function POST(request: NextRequest) {
     // Fetch site and verify ownership
     const { data: site, error: siteError } = await supabase
       .from('sites')
-      .select('id, user_id, subscription_status, subscription_plan, published_domain')
+      .select('id, user_id, published_domain')
       .eq('id', siteId)
       .single();
 
     if (siteError || !site) {
+      console.error('Supabase fetch error for site:', siteError, 'Site object:', site);
       return NextResponse.json(
-        { error: 'Site not found' },
+        { error: 'Site not found', details: siteError },
         { status: 404 }
       );
     }
@@ -70,7 +71,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify subscription is active
-    if (site.subscription_status !== 'active') {
+    const { data: subscription } = await supabase
+      .from('user_subscriptions')
+      .select('subscription_status')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!subscription || subscription.subscription_status !== 'active') {
       return NextResponse.json(
         { error: 'Subscription required to publish' },
         { status: 402 } // Payment Required

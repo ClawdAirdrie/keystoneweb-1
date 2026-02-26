@@ -6,7 +6,7 @@ export default function AnimatedGridPattern() {
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {/* Soft gradient background overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-transparent to-white/90 z-20" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/30 z-20" />
 
             {/* Grid Pattern */}
             <div className="absolute inset-0 opacity-[0.15]">
@@ -43,7 +43,7 @@ export default function AnimatedGridPattern() {
                     repeat: Infinity,
                     ease: 'easeInOut',
                 }}
-                className="absolute top-[20%] left-[15%] w-64 h-64 border-2 border-red-200 rounded-2xl bg-gradient-to-tr from-red-50 to-transparent z-10"
+                className="absolute top-[20%] left-[15%] w-64 h-64 border-2 border-red-300 rounded-2xl bg-gradient-to-tr from-red-100 to-transparent z-10"
             />
 
             <motion.div
@@ -59,7 +59,7 @@ export default function AnimatedGridPattern() {
                     ease: 'easeInOut',
                     delay: 2,
                 }}
-                className="absolute bottom-[20%] right-[10%] w-96 h-96 border-2 border-slate-200 rounded-full bg-gradient-to-bl from-slate-50 to-transparent z-10"
+                className="absolute bottom-[20%] right-[10%] w-96 h-96 border-2 border-slate-300 rounded-full bg-gradient-to-bl from-slate-200 to-transparent z-10"
             />
 
             <motion.div
@@ -75,7 +75,7 @@ export default function AnimatedGridPattern() {
                     ease: 'easeInOut',
                     delay: 5,
                 }}
-                className="absolute top-[40%] right-[30%] w-48 h-48 border-2 border-red-100 rotate-12 bg-white z-10 shadow-xl"
+                className="absolute top-[40%] right-[30%] w-48 h-48 border-2 border-red-300 rotate-12 bg-gradient-to-tr from-red-100 to-transparent z-10 shadow-xl"
             />
         </div>
     );

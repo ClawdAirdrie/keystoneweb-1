@@ -21,7 +21,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-6xl md:text-7xl font-black tracking-tight mb-6 leading-tight text-slate-900"
+            className="text-6xl md:text-7xl font-black tracking-tight mb-6 leading-tight text-black"
           >
             Your Website,
             <br />
@@ -34,7 +34,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-700 mb-12 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-900 mb-12 max-w-2xl mx-auto leading-relaxed font-medium"
           >
             No technical skills needed. Launch a professional website that turns visitors into customers.
             Get online, look professional, grow your business—starting today.
@@ -68,20 +68,20 @@ export default function HomePage() {
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-600 rounded-3xl blur-xl opacity-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 rounded-3xl blur-xl opacity-10" />
             <div className="relative bg-white rounded-3xl border border-slate-200 p-8 shadow-lg">
               <div className="grid grid-cols-3 gap-8 text-center">
                 <div>
                   <div className="text-4xl font-black text-red-600">5 min</div>
-                  <p className="text-sm text-slate-700 mt-2 font-medium">To Launch</p>
+                  <p className="text-sm text-slate-900 mt-2 font-bold">To Launch</p>
                 </div>
                 <div>
                   <div className="text-4xl font-black text-red-600">$49</div>
-                  <p className="text-sm text-slate-700 mt-2 font-medium">Per Month</p>
+                  <p className="text-sm text-slate-900 mt-2 font-bold">Per Month</p>
                 </div>
                 <div>
                   <div className="text-4xl font-black text-red-600">∞</div>
-                  <p className="text-sm text-slate-700 mt-2 font-medium">Possibilities</p>
+                  <p className="text-sm text-slate-900 mt-2 font-bold">Possibilities</p>
                 </div>
               </div>
             </div>
@@ -98,8 +98,8 @@ export default function HomePage() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-5xl font-black text-slate-900 mb-4 text-center">Built for Your Success</h2>
-            <p className="text-center text-slate-700 mb-16 max-w-2xl mx-auto text-lg">
+            <h2 className="text-5xl font-black text-black mb-4 text-center">Built for Your Success</h2>
+            <p className="text-center text-slate-900 mb-16 max-w-2xl mx-auto text-lg font-medium">
               Everything you need to get online and start selling
             </p>
           </motion.div>

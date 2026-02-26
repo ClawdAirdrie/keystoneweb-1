@@ -96,7 +96,7 @@ function PricingContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-5xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight"
+          className="text-5xl md:text-6xl font-black text-black mb-6 tracking-tight"
         >
           Simple, Transparent <span className="text-red-600">Pricing</span>.
         </motion.h1>
@@ -104,7 +104,7 @@ function PricingContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-xl text-slate-600 max-w-2xl mx-auto"
+          className="text-xl text-slate-900 font-medium max-w-2xl mx-auto"
         >
           {isPublishFlow
             ? 'Choose a plan to publish your site to the web.'
@@ -179,21 +179,21 @@ function PricingContent() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="bg-slate-900 rounded-3xl p-8 border border-slate-800 shadow-2xl relative"
+          className="bg-slate-950 rounded-3xl p-8 border border-slate-800 shadow-2xl relative"
         >
           <div className="absolute top-0 right-8 -translate-y-1/2 bg-red-600 outline outline-4 outline-white text-white px-4 py-1 rounded-full text-sm font-bold shadow-sm">
             Most Popular
           </div>
 
           <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-          <p className="text-slate-400 mb-6">
+          <p className="text-slate-300 mb-6 font-medium">
             {isPublishFlow
               ? 'Everything you need to grow your business online.'
               : 'For serious business owners who want to scale.'}
           </p>
           <div className="mb-8">
             <span className="text-5xl font-black text-white">$30</span>
-            <span className="text-slate-400 font-medium">/month</span>
+            <span className="text-slate-300 font-medium tracking-wide">/month</span>
           </div>
 
           <ul className="space-y-4 mb-8">
@@ -204,7 +204,7 @@ function PricingContent() {
               'Advanced SEO Tools',
               'Custom CSS Injection',
             ].map((feature) => (
-              <li key={feature} className="flex items-center gap-3 text-slate-300">
+              <li key={feature} className="flex items-center gap-3 text-slate-200 font-medium">
                 <Check className="w-5 h-5 text-red-500 shrink-0" />
                 {feature}
               </li>
@@ -239,7 +239,7 @@ export default function PricingPage() {
       <Header />
       <AnimatedGridPattern />
 
-      <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-100 rounded-full blur-[100px] opacity-50 -z-10" />
+      <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-200 rounded-full blur-[100px] opacity-50 -z-10" />
 
       <Suspense fallback={<div className="pt-40 text-center">Loading...</div>}>
         <PricingContent />

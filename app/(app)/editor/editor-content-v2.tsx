@@ -348,7 +348,7 @@ export default function EditorContent() {
   const currentPalette = paletteArray.find(p => p.name === selectedPaletteKey) || customPalette;
 
   return (
-    <div className="relative min-h-screen">
+    <div className="h-screen flex flex-col overflow-hidden relative">
       {/* Floating Toolbar */}
       <FloatingToolbar
         siteTitle={siteTitle}
@@ -370,9 +370,9 @@ export default function EditorContent() {
         publishedDomain={site?.publishedDomain}
       />
 
-      {/* Top Banner (Sticky so it naturally pushes content down as it wraps on mobile) */}
+      {/* Top Banner (Flex-none so it stays at very top of screen while template scrolls below) */}
       <div
-        className="sticky top-0 left-0 right-0 border-b p-3 z-[1000] shadow flex justify-center items-center gap-4 flex-wrap"
+        className="flex-none border-b p-3 z-[1000] shadow flex justify-center items-center gap-4 flex-wrap"
         style={{ backgroundColor: 'var(--brand-primary)', borderColor: 'var(--brand-primary-dark)' }}
       >
         <p className="text-sm text-white max-w-7xl text-center">
@@ -391,28 +391,30 @@ export default function EditorContent() {
         </button>
       </div>
 
-      {/* Template Render */}
-      <EditorProvider
-        value={{
-          content: editableContent,
-          isEditMode: editMode,
-          updateContent: handleUpdateContent,
-          palette: paletteData,
-          availablePalettes: Object.keys(availablePalettes),
-          siteId: siteId || undefined,
-          uploadImage: uploadImage,
-          setPalette: handlePaletteChange,
-        }}
-      >
-        <div className="w-full">
-          {templateComponent
-            ? createElement(templateComponent, {
-              palette: paletteData,
-              isEditMode: editMode,
-            })
-            : null}
-        </div>
-      </EditorProvider>
+      {/* Template Render Wrapper (This section alone scrolls, so sticky headers inside templates stick to the top of THIS container, right below our Editor banner) */}
+      <div className="flex-1 overflow-y-auto w-full relative">
+        <EditorProvider
+          value={{
+            content: editableContent,
+            isEditMode: editMode,
+            updateContent: handleUpdateContent,
+            palette: paletteData,
+            availablePalettes: Object.keys(availablePalettes),
+            siteId: siteId || undefined,
+            uploadImage: uploadImage,
+            setPalette: handlePaletteChange,
+          }}
+        >
+          <div className="w-full">
+            {templateComponent
+              ? createElement(templateComponent, {
+                palette: paletteData,
+                isEditMode: editMode,
+              })
+              : null}
+          </div>
+        </EditorProvider>
+      </div>
     </div>
   );
 }

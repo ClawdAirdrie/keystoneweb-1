@@ -189,7 +189,7 @@ export default function FloatingToolbar({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:brightness-110"
+          className="fixed bottom-6 right-6 z-[9999] w-14 h-14 rounded-full text-white shadow-lg flex items-center justify-center transition-all hover:scale-110 hover:brightness-110"
           style={{ backgroundColor: 'var(--brand-primary)' }}
           title="Open editor settings"
         >
@@ -212,7 +212,7 @@ export default function FloatingToolbar({
       {/* Drawer Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40 overscroll-none touch-none"
+          className="fixed inset-0 bg-black bg-opacity-30 z-[9998] overscroll-none touch-none"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -221,7 +221,7 @@ export default function FloatingToolbar({
       {isOpen && (
         <div
           ref={drawerRef}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto overscroll-contain transition-all duration-300 ease-out animate-in slide-in-from-bottom-10"
+          className="fixed bottom-0 left-0 right-0 z-[9999] bg-white rounded-t-3xl shadow-2xl max-h-[80vh] overflow-y-auto overscroll-contain transition-all duration-300 ease-out animate-in slide-in-from-bottom-10"
           onMouseMove={handleDragMove}
           onMouseUp={handleDragEnd}
           onMouseLeave={handleDragEnd}
