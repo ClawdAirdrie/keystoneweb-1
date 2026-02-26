@@ -15,9 +15,7 @@ const getStripeClient = () => {
  * Handle Stripe webhook events for subscription confirmation
  * 
  * Listens for:
- * - checkout.session.completed: Store subscription info in DB
- * - customer.subscription.updated: Update subscription status
- * - customer.subscription.deleted: Handle cancellation
+ * - checkout.session.completed: Store subscription info in DB when payment succeeds
  */
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -76,31 +74,6 @@ export async function POST(request: NextRequest) {
         }
 
         console.log(`✅ Subscription activated for site ${siteId}, plan: ${planName}`);
-        break;
-      }
-
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        // Update subscription status in DB if needed
-        console.log(`Subscription updated: ${subscription.id}`);
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        // Mark subscription as inactive
-        const { error } = await supabase
-          .from('sites')
-          .update({
-            subscription_status: 'canceled',
-          })
-          .eq('stripe_subscription_id', subscription.id);
-
-        if (error) {
-          console.error('Failed to update subscription cancellation:', error);
-        }
-
-        console.log(`Subscription canceled: ${subscription.id}`);
         break;
       }
 
