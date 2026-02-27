@@ -61,10 +61,16 @@ export default function PublicSiteRenderer({
     );
   }
 
+  // Ensure designData has safe defaults for palette
+  const safeDesignData = {
+    __selectedPalette: 'default',
+    ...designData,
+  };
+
   // Render template with design data (read-only)
   // editMode is always false for published sites
   return createElement(templateComponent, {
-    designData,
+    designData: safeDesignData,
     editMode: false,
     siteId,
   });
