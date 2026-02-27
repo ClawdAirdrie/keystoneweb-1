@@ -32,32 +32,42 @@ export default async function PublicSitePage({
 
     // Fetch the published site by subdomain
     console.log(`Querying for published_domain = '${subdomain}'`);
-    let { data: site, error } = await supabase
+    let { data: sites, error } = await supabase
       .from('sites')
       .select('*')
       .eq('published_domain', subdomain)
-      .eq('is_published', true)
-      .single();
+      .eq('is_published', true);
 
-    console.log('Query result:', { found: !!site, error });
+    let site = sites && sites.length > 0 ? sites[0] : null;
+    console.log('Query result:', { found: !!site, count: sites?.length, error });
 
-    // Fallback: Try with full domain format (in case stored as "akdesigns.kswd.ca")
+    // Fallback 1: Try without is_published filter (in case column doesn't exist)
     if (!site && !error) {
-      const fullDomain = `${subdomain}.kswd.ca`;
-      console.log(`Not found, trying full domain: '${fullDomain}'`);
-      const { data: fullSite, error: fullError } = await supabase
+      console.log(`Fallback 1: Trying without is_published filter...`);
+      const { data: fallbackSites } = await supabase
         .from('sites')
         .select('*')
-        .eq('published_domain', fullDomain)
-        .eq('is_published', true)
-        .single();
-      site = fullSite;
-      error = fullError;
-      console.log('Fallback result:', { found: !!site, error });
+        .eq('published_domain', subdomain);
+      
+      site = fallbackSites && fallbackSites.length > 0 ? fallbackSites[0] : null;
+      console.log('Fallback 1 result:', { found: !!site, count: fallbackSites?.length });
     }
 
-    if (error || !site) {
-      console.error('Site not found:', { subdomain, error: error?.message });
+    // Fallback 2: Try with full domain format (in case stored as "akdesigns.kswd.ca")
+    if (!site && !error) {
+      const fullDomain = `${subdomain}.kswd.ca`;
+      console.log(`Fallback 2: Trying full domain: '${fullDomain}'`);
+      const { data: fullSites } = await supabase
+        .from('sites')
+        .select('*')
+        .eq('published_domain', fullDomain);
+      
+      site = fullSites && fullSites.length > 0 ? fullSites[0] : null;
+      console.log('Fallback 2 result:', { found: !!site, count: fullSites?.length });
+    }
+
+    if (!site) {
+      console.error('Site not found:', { subdomain, error: error?.message, allSitesCount: allSites?.length });
       return (
         <div className="flex items-center justify-center min-h-screen bg-slate-50">
           <div className="text-center max-w-md">
