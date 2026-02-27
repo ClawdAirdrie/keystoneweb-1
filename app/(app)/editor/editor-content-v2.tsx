@@ -13,7 +13,7 @@ import { useImageUpload } from '@/lib/hooks/useImageUpload';
 import { useChangeTracking } from '@/lib/hooks/useChangeTracking';
 import EditorLoadingScreen from '@/app/components/EditorLoadingScreen';
 
-interface SiteData {
+export interface SiteData {
   id: string;
   userId: string | null;
   selectedTemplateId: string;
@@ -22,11 +22,17 @@ interface SiteData {
   designData: Record<string, any>;
   isPublished: boolean;
   publishedDomain?: string;
+  siteSlug?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export default function EditorContent() {
+export interface EditorContentProps {
+  publicSiteData?: SiteData;
+  isPublicView?: boolean;
+}
+
+export default function EditorContent({ publicSiteData, isPublicView = false }: EditorContentProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -54,8 +60,16 @@ export default function EditorContent() {
   const siteId = searchParams.get('siteId');
   const { uploadImage } = useImageUpload(siteId || '');
 
-  // Auth check and site loading
+  // Auth check and site loading (ONLY for editor mode)
   useEffect(() => {
+    if (isPublicView) {
+      if (publicSiteData) {
+        setSite(publicSiteData);
+        setLoading(false);
+      }
+      return;
+    }
+
     if (authLoading) return;
 
     if (!user) {
@@ -68,7 +82,20 @@ export default function EditorContent() {
     } else {
       redirectToLatestSite();
     }
-  }, [user, authLoading, siteId, router]);
+  }, [user, authLoading, siteId, router, isPublicView, publicSiteData]);
+
+  // Sync state when publicSiteData updates
+  useEffect(() => {
+    if (isPublicView && publicSiteData) {
+      const title = publicSiteData.siteSlug || 'My Website';
+      const content = publicSiteData.designData || {};
+      const selectedPalette = content.__selectedPalette || 'default';
+
+      setSiteTitle(title);
+      setEditableContent(content);
+      setSelectedPaletteKey(selectedPalette);
+    }
+  }, [publicSiteData, isPublicView]);
 
   // Load template component and metadata when site changes
   useEffect(() => {
@@ -240,7 +267,7 @@ export default function EditorContent() {
   };
 
   const handleSaveDesign = async () => {
-    if (!site) return;
+    if (!site?.id || isPublicView) return;
 
     try {
       setSaving(true);
@@ -346,6 +373,33 @@ export default function EditorContent() {
   paletteArray.push(customPalette);
 
   const currentPalette = paletteArray.find(p => p.name === selectedPaletteKey) || customPalette;
+
+  // If in pure public viewer mode, render the template directly without the editor wrappers
+  if (isPublicView) {
+    return (
+      <EditorProvider
+        value={{
+          content: editableContent,
+          isEditMode: false,
+          updateContent: () => { },
+          palette: paletteData,
+          availablePalettes: Object.keys(availablePalettes),
+          siteId: site?.id,
+          uploadImage: async () => { return ''; },
+          setPalette: () => { },
+        }}
+      >
+        <div className="w-full min-h-screen">
+          {templateComponent
+            ? createElement(templateComponent, {
+              palette: paletteData,
+              isEditMode: false, // strictly enforce false
+            })
+            : null}
+        </div>
+      </EditorProvider>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">

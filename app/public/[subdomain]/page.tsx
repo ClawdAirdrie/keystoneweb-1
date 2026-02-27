@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/db/supabase-server';
-import PublicSiteRenderer from './client';
+import EditorContent from '@/app/(app)/editor/editor-content-v2';
 
 export const dynamic = 'force-dynamic'; // Always fetch fresh data
 
@@ -34,12 +34,21 @@ export default async function PublicSitePage({
       );
     }
 
-    // Render the published site (read-only)
+    // Render the published site via unified EditorContent (read-only mode)
     return (
-      <PublicSiteRenderer
-        siteId={site.id}
-        templateId={site.selected_template_id}
-        designData={site.design_data || {}}
+      <EditorContent
+        isPublicView={true}
+        publicSiteData={{
+          id: site.id,
+          userId: null,
+          selectedTemplateId: site.selected_template_id,
+          businessType: '',
+          category: '',
+          designData: site.design_data || {},
+          isPublished: true,
+          createdAt: '',
+          updatedAt: ''
+        }}
       />
     );
   } catch (error) {
